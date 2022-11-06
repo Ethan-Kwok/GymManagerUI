@@ -94,17 +94,19 @@ public class ClassSchedule {
      * Prints schedule of the fitness classes.
      * Lists the information of the fitness class and all the members and guests in the class for all fitness classes.
      */
-    public void printSchedule() {
+    public String printSchedule() {
+        String output = "";
         if(isEmpty()) {
-            System.out.println("Fitness class schedule is empty.");
+            output = "Fitness class schedule is empty.\n";
         }
         else {
-            System.out.println("-Fitness classes-");
+            output += "-Fitness classes-\n";
             for (int i = 0; i < numClasses; i++) {
-                System.out.println(fitClasses[i].toString());
+                output += fitClasses[i].toString() + "\n";
             }
-            System.out.println("-end of class list-");
+            output += ("-end of class list-\n");
         }
+        return output;
     }
 
 }

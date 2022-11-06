@@ -104,14 +104,14 @@ public class MemberDatabase {
      * The Members are printed in the format given by toString() in the Member class. Note the check if the Member
      * database is empty is in displayMembers() in the GymManager class.
      */
-    public void print() {
+    public String print() {
+        String printOutput = "";
         for (int i = 0; i < size; i++) {
             if (mlist[i] != null) {
-
-                System.out.println(mlist[i].toString());
-
+                printOutput += mlist[i].toString() + "\n";
             }
         }
+        return printOutput;
     }
 
     /**
@@ -119,18 +119,16 @@ public class MemberDatabase {
      * Location is sorted first alphabetically by county and then least to greatest by zipcode. If the database is
      * empty, it will print "Member database is empty!".
      */
-    public void printByCounty() {
-        if (isEmpty()) {
-            System.out.println("Member database is empty!");
-            return;
-        }
+    public String printByCounty() {
+        String printOutput = "";
 
         int sortType = SORT_BY_LOCATION;
         quickSort(0, size-1, sortType);
 
-        System.out.println("-list of members sorted by county and zipcode-");
-        print();
-        System.out.println("-end of list-");
+        printOutput += "-list of members sorted by county and zipcode-\n";
+        printOutput += print();
+        printOutput += "-end of list-\n";
+        return printOutput;
     }
 
     /**
@@ -138,18 +136,16 @@ public class MemberDatabase {
      * Expiration date is sorted from earliest to latest. If the database is empty, it will print "Member database
      * is empty!".
      */
-    public void printByExpirationDate() {
-        if (isEmpty()) {
-            System.out.println("Member database is empty!");
-            return;
-        }
+    public String printByExpirationDate() {
+        String printOutput = "";
 
         int sortType = SORT_BY_EXPIRATION;
         quickSort(0, size-1, sortType);
 
-        System.out.println("-list of members sorted by membership expiration date-");
-        print();
-        System.out.println("-end of list-");
+        printOutput += "-list of members sorted by membership expiration date-\n";
+        printOutput += print();
+        printOutput += "-end of list-\n";
+        return printOutput;
     }
 
     /**
@@ -157,19 +153,18 @@ public class MemberDatabase {
      * Name is sorted first alphabetically last name then first name. If the database is empty, it will print
      * "Member database is empty!".
      */
-    public void printByName() {
-        if (isEmpty()) {
-            System.out.println("Member database is empty!");
-            return;
-        }
+    public String printByName() {
+        String printOutput = "";
 
         int sortType = SORT_BY_NAME;
         quickSort(0, size-1, sortType);
 
-        System.out.println("-list of members sorted by last name, and first name-");
-        print();
-        System.out.println("-end of list-");
+        printOutput += "-list of members sorted by last name, and first name-\n";
+        printOutput += print();
+        printOutput += "-end of list-\n";
+        return printOutput;
     }
+
 
     /**
      * Recursive algorithm for the quickSort sorting method.
