@@ -25,6 +25,20 @@ public class GymManagerController {
     @FXML
     private RadioButton standardButton, familyButton, premiumButton;
     @FXML
+    private TextField fitnessFirstNameTextField;
+    @FXML
+    private TextField fitnessLastNameTextField;
+    @FXML
+    private DatePicker fitnessDobDatePicker;
+    @FXML
+    private TextField fitnessLocationTextField;
+    @FXML
+    private TextField fitnessInstructorNameTextField;
+    @FXML
+    private RadioButton pilatesButton, spinningButton, cardioButton;
+    @FXML
+    private CheckBox isGuest;
+    @FXML
     private TextArea outputTextArea;
 
     private MemberDatabase database;
@@ -39,13 +53,388 @@ public class GymManagerController {
     }
 
 
+    public void checkInPressed() {
+        if (fitnessFirstNameTextField.getText().equals("") || fitnessLastNameTextField.getText().equals("")) {
+            outputTextArea.appendText("Please enter a name!\n");
+            return;
+        }
+        if (fitnessDobDatePicker.getValue() == null) {
+            outputTextArea.appendText("Please enter a date!\n");
+            return;
+        }
+        if (fitnessInstructorNameTextField.getText().equals("")) {
+            outputTextArea.appendText("Please enter an instructor!\n");
+            return;
+        }
+        if (fitnessLocationTextField.getText().equals("")) {
+            outputTextArea.appendText("Please enter a location!\n");
+            return;
+        }
+
+        if (isGuest.isSelected()) {
+            checkInGuest();
+        }
+        else {
+            checkInMember();
+        }
+    }
+
+
+    public void checkOutPressed() {
+        if (fitnessFirstNameTextField.getText().equals("") || fitnessLastNameTextField.getText().equals("")) {
+            outputTextArea.appendText("Please enter a name!\n");
+            return;
+        }
+        if (fitnessDobDatePicker.getValue() == null) {
+            outputTextArea.appendText("Please enter a date!\n");
+            return;
+        }
+        if (fitnessInstructorNameTextField.getText().equals("")) {
+            outputTextArea.appendText("Please enter an instructor!\n");
+            return;
+        }
+        if (fitnessLocationTextField.getText().equals("")) {
+            outputTextArea.appendText("Please enter a location!\n");
+            return;
+        }
+
+        if (isGuest.isSelected()) {
+            dropClassGuest();
+        }
+        else {
+            dropClass();
+        }
+    }
+
+
+    private void dropClass() {
+        FitnessClass fitClass = new FitnessClass();
+        Member m = new Member();
+
+        String className = "";
+        if (pilatesButton.isSelected()) className = "PILATES";
+        if (spinningButton.isSelected()) className = "SPINNING";
+        if (cardioButton.isSelected()) className = "CARDIO";
+        FitnessClasses fclass = findClass(className);
+        fitClass.setClass(fclass);
+
+        String instructorName = fitnessInstructorNameTextField.getText();
+        Instructors instructor = findInstructor(instructorName);
+        fitClass.setInstructor(instructor);
+
+        String locationName = fitnessLocationTextField.getText();
+        Location location = findLocation(locationName);
+        fitClass.setLocation(location);
+
+        m.setFname(fitnessFirstNameTextField.getText());
+        m.setLname(fitnessLastNameTextField.getText());
+        Date dob = new Date(fitnessDobDatePicker.getValue().format(DateTimeFormatter.ofPattern("MM/dd/yyyy")));
+        m.setDob(dob);
+
+        if(validConditions(m, className, instructorName, locationName, fitClass)) {
+            if(!schedule.getFitnessClass(fitClass).drop(m)) {
+                outputTextArea.appendText(m.getFname() + " " + m.getLname() + " did not check in.\n");
+            }
+            else {
+                outputTextArea.appendText(m.getFname() + " " + m.getLname() + " done with the class.\n");
+            }
+        }
+    }
+
+
+    private void dropClassGuest() {
+        FitnessClass fitClass = new FitnessClass();
+        Member m = new Member();
+
+        String className = "";
+        if (pilatesButton.isSelected()) className = "PILATES";
+        if (spinningButton.isSelected()) className = "SPINNING";
+        if (cardioButton.isSelected()) className = "CARDIO";
+        FitnessClasses fclass = findClass(className);
+        fitClass.setClass(fclass);
+
+        String instructorName = fitnessInstructorNameTextField.getText();
+        Instructors instructor = findInstructor(instructorName);
+        fitClass.setInstructor(instructor);
+
+        String locationName = fitnessLocationTextField.getText();
+        Location location = findLocation(locationName);
+        fitClass.setLocation(location);
+
+        m.setFname(fitnessFirstNameTextField.getText());
+        m.setLname(fitnessLastNameTextField.getText());
+        Date dob = new Date(fitnessDobDatePicker.getValue().format(DateTimeFormatter.ofPattern("MM/dd/yyyy")));
+        m.setDob(dob);
+
+        if(validConditions(m, className, instructorName, locationName, fitClass)) {
+            if (!schedule.getFitnessClass(fitClass).dropGuest((Family) database.getMember(m))) {
+                outputTextArea.appendText(m.getFname() + " " + m.getLname() + " has no guests checked in\n");
+            }
+            else {
+                outputTextArea.appendText(m.getFname() + " " + m.getLname() + " Guest done with the class.\n");
+            }
+        }
+    }
+
+
+    private void checkInMember() {
+        FitnessClass fitClass = new FitnessClass();
+        Member m = new Member();
+
+        String className = "";
+        if (pilatesButton.isSelected()) className = "PILATES";
+        if (spinningButton.isSelected()) className = "SPINNING";
+        if (cardioButton.isSelected()) className = "CARDIO";
+        FitnessClasses fclass = findClass(className);
+        fitClass.setClass(fclass);
+
+        String instructorName = fitnessInstructorNameTextField.getText();
+        Instructors instructor = findInstructor(instructorName);
+        fitClass.setInstructor(instructor);
+
+        String locationName = fitnessLocationTextField.getText();
+        Location location = findLocation(locationName);
+        fitClass.setLocation(location);
+
+        m.setFname(fitnessFirstNameTextField.getText());
+        m.setLname(fitnessLastNameTextField.getText());
+        Date dob = new Date(fitnessDobDatePicker.getValue().format(DateTimeFormatter.ofPattern("MM/dd/yyyy")));
+        m.setDob(dob);
+
+        if(validCheckIn(m, className, instructorName, locationName, fitClass)) {
+            if (!schedule.getFitnessClass(fitClass).checkIn(database.getMember(m))) {
+                outputTextArea.appendText(m.getFname() + " " + m.getLname() + " already checked in.\n");
+            } else {
+                outputTextArea.appendText(m.getFname() + " " + m.getLname() + " checked in "
+                        + schedule.getFitnessClass(fitClass).toString() +"\n");
+            }
+        }
+    }
+
+
+    public void checkInGuest() {
+        FitnessClass fitClass = new FitnessClass();
+        Member m = new Member();
+
+        String className = "";
+        if (pilatesButton.isSelected()) className = "PILATES";
+        if (spinningButton.isSelected()) className = "SPINNING";
+        if (cardioButton.isSelected()) className = "CARDIO";
+        FitnessClasses fclass = findClass(className);
+        fitClass.setClass(fclass);
+
+        String instructorName = fitnessInstructorNameTextField.getText();
+        Instructors instructor = findInstructor(instructorName);
+        fitClass.setInstructor(instructor);
+
+        String locationName = fitnessLocationTextField.getText();
+        Location location = findLocation(locationName);
+        fitClass.setLocation(location);
+
+        m.setFname(fitnessFirstNameTextField.getText());
+        m.setLname(fitnessLastNameTextField.getText());
+        Date dob = new Date(fitnessDobDatePicker.getValue().format(DateTimeFormatter.ofPattern("MM/dd/yyyy")));
+        m.setDob(dob);
+
+        if(validGuestCheckIn(m, className, instructorName, locationName, fitClass)) {
+            if (!schedule.getFitnessClass(fitClass).checkInGuest((Family) database.getMember(m))) {
+                outputTextArea.appendText(m.getFname() + " " + m.getLname() + " ran out of guest passes.\n");
+            }
+            else {
+                outputTextArea.appendText(m.getFname() + " " + m.getLname() + " (guest) checked in " +
+                        schedule.getFitnessClass(fitClass).toString() + "\n");
+            }
+        }
+    }
+
+
+    /**
+     * Checks if a Member is able to check into a given fitness class. Specifically, it checks the conditions in the
+     * validConditions() method, then checks if the class is at the same location as the membership, if the membership
+     * has not expired, and if the class time does not conflict with another. If there is an issue with validity,
+     * the reasoning is printed.
+     * @param m Member object representing the Member to be checked.
+     * @param className String representing the name of the fitness class.
+     * @param instructorName String representing the name of the fitness class's instructor.
+     * @param locationName String representing the location of the fitness class.
+     * @param fitClass FitnessClass object representing the Fitness Class data.
+     * @return false if the member or class is invalid or does not exist, if the location and membership do not match,
+     *         if the membership has expired or if the class time conflicts with another. True otherwise.
+     */
+    private boolean validCheckIn(Member m, String className, String instructorName,
+                                 String locationName, FitnessClass fitClass) {
+        Date today = new Date();
+        if(validConditions(m, className, instructorName, locationName, fitClass)) {
+            if (!(database.getMember(m) instanceof Family)) {
+                if(!database.getMember(m).getLocation().equals(fitClass.getLocation())) {
+                    outputTextArea.appendText(m.getFname() + " " + m.getLname() + " checking in " +
+                            fitClass.getLocation().toString() + " - standard membership location restriction.\n");
+                    return false;
+                }
+            }
+            if(database.getMember(m).getExpire().compareTo(today) < 0) {
+                outputTextArea.appendText(m.getFname() + " " + m.getLname() + " " + m.getDob() + " membership expired.\n");
+                return false;
+            }
+            FitnessClass classConflict= checkTimeConflict(m, schedule.getFitnessClass(fitClass));
+            if(classConflict != null) {
+                outputTextArea.appendText("Time conflict - " + classConflict.getFitClass().name() + " - " +
+                        classConflict.getInstructor().name() + ", " + classConflict.getTime().toString() + ", " +
+                        classConflict.getLocation().toString() + "\n");
+                return false;
+            }
+            return true;
+        }
+        return false;
+    }
+
+
+    /**
+     * Check if a class's time conflicts with another class's. Used in validCheckIn().
+     * @param m Member object representing the owner of the membership.
+     * @param fclass FitnessClass object with data representing the fitness class to be checked.
+     * @return FitnessClass object if it exists and does not conflict with another time, null otherwise.
+     */
+    private FitnessClass checkTimeConflict(Member m, FitnessClass fclass) {
+        Time time = fclass.getTime();
+
+        for(int i = 0; i < schedule.getNumClasses(); i++) {
+            FitnessClass fitClass = schedule.getFitnessClass(i);
+            for(int j = 0; j < fitClass.getLength(); j++) {
+                if(!fclass.equals(fitClass) && time.equals(fitClass.getTime()) &&
+                        fitClass.memberCheck(m)) {
+                    return fitClass;
+                }
+            }
+        }
+
+        return null;
+    }
+
+
+    /**
+     * Checks if a Member's (Family or Premium membership) guest can be checked in. Specifically, it checks the
+     * membership type, if the membership has expired, and if the location of the class matches the location
+     * of the membership. If it's not valid, it prints the issue.
+     * @param m Member object representing the Member to be checked.
+     * @param className String representing the name of the fitness class.
+     * @param instructorName String representing the name of the fitness class's instructor.
+     * @param locationName String representing the location of the fitness class.
+     * @param fitClass FitnessClass object representing the Fitness Class data.
+     * @return false if the membership is standard, the membership has expired, or the location of the class does not
+     * match the location of the membership. True otherwise.
+     */
+    private boolean validGuestCheckIn(Member m, String className, String instructorName,
+                                      String locationName, FitnessClass fitClass) {
+        Date today = new Date();
+        if(!(database.getMember(m) instanceof Family)) {
+            outputTextArea.appendText("Standard membership - guest check-in is not allowed.\n");
+            return false;
+        }
+        if(!validConditions(m, className, instructorName, locationName, fitClass)) {
+            return false;
+        }
+        if(database.getMember(m).getExpire().compareTo(today) < 0) {
+            outputTextArea.appendText(m.getFname() + " " + m.getLname() + " " + m.getDob() + " membership expired.\n");
+            return false;
+        }
+        if(!database.getMember(m).getLocation().equals(fitClass.getLocation())) {
+            outputTextArea.appendText(m.getFname() + " " + m.getLname() + " Guest checking in " +
+                    fitClass.getLocation().toString() + " - guest location restriction.\n");
+            return false;
+        }
+        return true;
+    }
+
+
+    /**
+     * Checks if the data of a Member is all valid and whether the fitness class exists. Specifically, it checks
+     * the validity of the calendar date, whether the Member is in the Member Database, if the class exists, if the
+     * instructor exists, if the gym is at a location, and if the fitness class exists. Prints the output and error
+     * if it is not valid.
+     * @param m Member object representing the Member to be checked.
+     * @param className String representing the name of the fitness class.
+     * @param instructorName String representing the name of the fitness class's instructor.
+     * @param locationName String representing the location of the fitness class.
+     * @param fitClass FitnessClass object representing the Fitness Class data.
+     * @return false if the member or class is invalid or does not exist, true otherwise.
+     */
+    private boolean validConditions(Member m, String className, String instructorName,
+                                    String locationName, FitnessClass fitClass) {
+        if(!m.getDob().isValid()) {
+            outputTextArea.appendText("DOB " + m.getDob() + ": invalid calendar date!\n");
+            return false;
+        }
+        if(database.getMember(m) == null) {
+            outputTextArea.appendText(m.getFname() + " " + m.getLname() + " " + m.getDob() + " is not in the database.\n");
+            return false;
+        }
+        if(fitClass.getFitClass() == null) {
+            outputTextArea.appendText(className + " - class does not exist.\n");
+            return false;
+        }
+        if(fitClass.getInstructor() == null) {
+            outputTextArea.appendText(instructorName + " - instructor does not exist.\n");
+            return false;
+        }
+        if(fitClass.getLocation() == null) {
+            outputTextArea.appendText(locationName + " - invalid location.\n");
+            return false;
+        }
+        if(schedule.getFitnessClass(fitClass) == null) {
+            Location falseLocation = locationCheck(fitClass);
+            if(falseLocation != null) {
+                outputTextArea.appendText(fitClass.getFitClass().getClassName() + " by " +
+                        fitClass.getInstructor().toString() + " does not exist at " + falseLocation.name() + "\n");
+            }
+            else {
+                outputTextArea.appendText(fitClass.getFitClass().getClassName() + " by " +
+                        fitClass.getInstructor().toString() + " at " + fitClass.getLocation().toString()
+                        + " has not been loaded in\n");
+            }
+            return false;
+        }
+        return true;
+    }
+
+
+    /**
+     * Check the location of a fitness class if it exists. Used in validConditions().
+     * @param fclass FitnessClass object with data representing the fitness class to be checked.
+     * @return Location object representing the location of the fitness class if it exists, or null if it does not.
+     */
+    private Location locationCheck(FitnessClass fclass) {
+        for(int i = 0; i < schedule.getNumClasses(); i++) {
+            FitnessClass fitClass = schedule.getFitnessClass(i);
+            for(int j = 0; j < fitClass.getLength(); j++) {
+                if(fclass.getFitClass().equals(fitClass.getFitClass()) &&
+                        fclass.getInstructor().equals(fitClass.getInstructor()) &&
+                        !fclass.getLocation().equals(fitClass.getLocation())) {
+                    return fclass.getLocation();
+                }
+            }
+        }
+        return null;
+    }
+
+
     public void addMember() {
         if (firstNameTextField.getText().equals("") || lastNameTextField.getText().equals("")) {
             outputTextArea.appendText("Please enter a name!\n");
             return;
         }
-        if (dobDatePicker.getValue() == null) {
+        try {
+            if (dobDatePicker.getValue() == null) {
+                outputTextArea.appendText("Please enter a date!\n");
+                return;
+            }
+        }
+        catch(Exception e) {
             outputTextArea.appendText("Please enter a date!\n");
+
+        }
+        if (locationTextField.getText().equals("")) {
+            outputTextArea.appendText("Please enter a location!\n");
             return;
         }
 
@@ -334,25 +723,30 @@ public class GymManagerController {
                 String[] words = line.split(" ");
                 int count = 0;
 
-                FitnessClass fitClass = new FitnessClass();
-                String className = words[count++];
-                FitnessClasses fclass = findClass(className);
-                fitClass.setClass(fclass);
+                try {
+                    FitnessClass fitClass = new FitnessClass();
+                    String className = words[count++];
+                    FitnessClasses fclass = findClass(className);
+                    fitClass.setClass(fclass);
 
-                String instructorName = words[count++];
-                Instructors instructor = findInstructor(instructorName);
-                fitClass.setInstructor(instructor);
+                    String instructorName = words[count++];
+                    Instructors instructor = findInstructor(instructorName);
+                    fitClass.setInstructor(instructor);
 
-                String timeStr = words[count++];
-                Time time = findTime(timeStr);
-                fitClass.setTime(time);
+                    String timeStr = words[count++];
+                    Time time = findTime(timeStr);
+                    fitClass.setTime(time);
 
-                String locationName = words[count];
-                Location location = findLocation(locationName);
-                fitClass.setLocation(location);
+                    String locationName = words[count];
+                    Location location = findLocation(locationName);
+                    fitClass.setLocation(location);
 
-                schedule.addClass(fitClass);
-                outputTextArea.appendText(fitClass + "\n");
+                    schedule.addClass(fitClass);
+                    outputTextArea.appendText(fitClass + "\n");
+                }
+                catch(Exception e) {
+                    outputTextArea.appendText("Error: Invalid Class Information\n");
+                }
             }
             outputTextArea.appendText("-end of class list-\n");
             sc.close();
